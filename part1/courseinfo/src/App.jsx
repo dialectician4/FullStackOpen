@@ -6,35 +6,49 @@ import { useState } from 'react'
 
 const Header = (props) => <h1>{props.course}</h1>;
 
-const Content = (props) => {
+const Content = ({ parts }) => {
   return (
     <div>
-      <Part text={props.ex1} value={props.val1} />
-      <Part text={props.ex2} value={props.val2} />
-      <Part text={props.ex3} value={props.val3} />
+      <Part text={parts[0].name} value={parts[0].exercises} />
+      <Part text={parts[1].name} value={parts[1].exercises} />
+      <Part text={parts[2].name} value={parts[2].exercises} />
     </div>
   )
 }
 
-const Total = (props) => <p>Number of exercises {props.total}</p>;
+const Total = ({ parts }) => (
+  <p>Number of exercises {
+    parts[0].exercises + parts[1].exercises + parts[2].exercises
+  }</p>
+)
 
 const Part = (props) => <p>{props.text} {props.value}</p>;
 
 
 function App() {
-  const course = 'Half Stack application development'
-  const part1 = 'Fundamentals of React'
-  const exercises1 = 10
-  const part2 = 'Using props to pass data'
-  const exercises2 = 7
-  const part3 = 'State of a component'
-  const exercises3 = 14
+  const course = {
+    name: 'Half Stack application development',
+    parts: [{
+      name: 'Fundamentals of React',
+      exercises: 10
+    },
+    {
+      name: 'Using props to pass data',
+      exercises: 7
+    },
+    {
+      name: 'State of a component',
+      exercises: 14
+    }]
+  }
 
   return (
     <div>
-      <Header course={course} />
-      <Content ex1={part1} val1={exercises1} ex2={part2} val2={exercises2} ex3={part3} val3={exercises3} />
-      <Total total={exercises1 + exercises2 + exercises3} />
+      <Header course={course.name} />
+      <Content
+        parts={course.parts}
+      />
+      <Total parts={course.parts} />
     </div>
   )
 }
