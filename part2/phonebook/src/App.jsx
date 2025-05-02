@@ -1,4 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+
+const api_url = "http://localhost:3001/persons";
 
 const PersonEntry = ({ name, number }) => (<div>{name} {number}</div>);
 const DisplayPersons = ({ persons, search_filter }) => {
@@ -32,19 +35,24 @@ const SearchFilter = ({ search_input, handle_search }) => {
 }
 
 const App = () => {
-  const [persons, setPersons] = useState([
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-  ]);
+  const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [search, setSearch] = useState('');
 
+  const get_init_state = () => {
+  axios
+    .get(api_url)
+    .then( response => setPersons(response.data))
+    .then(res => console.log("page initialization successful"))
+  }
+  useEffect(get_init_state, []);
+  
+
   const handleNameChange = (event) => (setNewName(event.target.value));
   const handleNumberChange = (event) => (setNewNumber(event.target.value));
   const handleSearchChange = (event) => (setSearch(event.target.value));
+  // axios.post(api_url, {cat: "mia", bat: "mia"}).then(res => console.log("response: ", res.data));
 
   const AddPerson = (event) => {
     event.preventDefault();
@@ -52,10 +60,18 @@ const App = () => {
     if (dupicate_name) {
       alert(`${newName} is already added to phonebook`);
     } else {
-      setPersons(persons.concat([{ name: newName, number: newNumber }]));
-      setNewName("");
-      setNewNumber("");
-      //console.log("event contents", newName);
+      const new_person = { name: newName, number: newNumber };
+      console.log("new person", new_person);
+      axios.post(api_url, new_person)
+        .then( response => {
+          setPersons(persons.concat(response.data));
+      	  setNewName("");
+      	  setNewNumber("");
+	})
+	// .catch(
+	//   alert(`Error adding ${new_person.name} to address book`)
+	// );
+      // console.log("event contents", newName);
     }
   }
 
