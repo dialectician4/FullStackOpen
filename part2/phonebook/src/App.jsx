@@ -1,15 +1,19 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import entryservice from './services/requests'
 
-const api_url = "http://localhost:3001/persons";
+//import axios from 'axios'
+//const api_url = "http://localhost:3001/persons";
 
-const PersonEntry = ({ name, number }) => (<div>{name} {number}</div>);
-const DisplayPersons = ({ persons, search_filter }) => {
+const PersonEntry = ({ name, number, delete_handler }) => (<div>{name} {number}<button onClick={delete_handler}>delete</button></div>);
+const DisplayPersons = ({ persons, search_filter, delete_handler }) => {
   return (
     <div>
       {persons
         .filter((person) => person.name.toUpperCase().includes(search_filter.toUpperCase()))
-        .map((person) => <PersonEntry key={person.name} name={person.name} number={person.number} />)}
+        .map((person) => {
+          //return <PersonEntry key={person.name} name={person.name} number={person.number} id={person.id} />
+          return <PersonEntry key={person.name} delete_handler={() => delete_handler({ ...person })} {...person} />
+        })}
     </div>
   )
 }
@@ -40,38 +44,51 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('');
   const [search, setSearch] = useState('');
 
-  const get_init_state = () => {
-  axios
-    .get(api_url)
-    .then( response => setPersons(response.data))
-    .then(res => console.log("page initialization successful"))
+  const get_persons = () => {
+    entryservice.get_entries()
+      .then(init_results => setPersons(init_results))
+    //.then(_ => console.log("page initialization successful"))
   }
-  useEffect(get_init_state, []);
-  
+  useEffect(get_persons, []);
+
 
   const handleNameChange = (event) => (setNewName(event.target.value));
   const handleNumberChange = (event) => (setNewNumber(event.target.value));
   const handleSearchChange = (event) => (setSearch(event.target.value));
-  // axios.post(api_url, {cat: "mia", bat: "mia"}).then(res => console.log("response: ", res.data));
+  const handleDelete = ({ id, name }) => {
+    if (confirm(`Delete ${name}?`)) {
+      entryservice
+        .delete_entry(id)
+        .then(_ => get_persons());
+    };
+  };
 
   const AddPerson = (event) => {
     event.preventDefault();
     const dupicate_name = persons.map((person) => person.name).includes(newName);
     if (dupicate_name) {
-      alert(`${newName} is already added to phonebook`);
+      if (confirm(`${newName} is already added to phonebook, replace old number with new number?`)) {
+        const current_person = persons.filter(person => person.name === newName)[0];
+        const updated_person = { ...current_person, number: newNumber };
+        const update_id = updated_person.id;
+        entryservice
+          .update_entry(update_id, updated_person)
+          .then(update_return => setPersons(persons.map(person => person.id === update_id ? update_return : person)))
+      }
     } else {
       const new_person = { name: newName, number: newNumber };
-      console.log("new person", new_person);
-      axios.post(api_url, new_person)
-        .then( response => {
-          setPersons(persons.concat(response.data));
-      	  setNewName("");
-      	  setNewNumber("");
-	})
-	// .catch(
-	//   alert(`Error adding ${new_person.name} to address book`)
-	// );
-      // console.log("event contents", newName);
+      //console.log("new person", new_person);
+      entryservice
+        .create_entry(new_person)
+        .then(response => {
+          setPersons(persons.concat(response));
+          setNewName("");
+          setNewNumber("");
+        })
+        .catch((e) => {
+          alert(`Error adding ${new_person.name} to address book: ${e}`)
+        }
+        );
     }
   }
 
@@ -92,7 +109,7 @@ const App = () => {
         </div>
       </form>
       <h2>Numbers</h2>
-      <DisplayPersons persons={persons} search_filter={search} />
+      <DisplayPersons persons={persons} search_filter={search} delete_handler={handleDelete} />
     </div>
   )
 }
