@@ -38,11 +38,57 @@ const SearchFilter = ({ search_input, handle_search }) => {
   )
 }
 
+const SuccessNotification = ({message}) => {
+  if (message === null) {
+    return null
+  }
+  const successStyle = {
+    color: 'green',
+    fontStyle: 'italic',
+    fontsize: 20,
+    background: 'lightgrey',
+    borderStyle: 'solid',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10
+  }
+
+  return (
+    <div style={successStyle}>
+      {message}
+    </div>
+  )
+}
+
+const ErrorNotification = ({message}) => {
+  if (message === null) {
+    return null
+  }
+  const successStyle = {
+    color: 'red',
+    fontStyle: 'italic',
+    fontsize: 20,
+    background: 'lightgrey',
+    borderStyle: 'solid',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10
+  }
+
+  return (
+    <div style={successStyle}>
+      {message}
+    </div>
+  )
+}
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState('');
   const [newNumber, setNewNumber] = useState('');
   const [search, setSearch] = useState('');
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const get_persons = () => {
     entryservice.get_entries()
@@ -74,6 +120,18 @@ const App = () => {
         entryservice
           .update_entry(update_id, updated_person)
           .then(update_return => setPersons(persons.map(person => person.id === update_id ? update_return : person)))
+          .then(_ => {
+            setSuccessMessage(`Number for ${current_person.name} has been updated!`);
+            setTimeout(() => {
+              setSuccessMessage(null);
+            }, 5000)
+          })
+          .catch(error => {
+            setErrorMessage(`Could not locate entry for ${current_person.name} to update on server.`);
+            setTimeout(() => {
+              setErrorMessage(null);
+            }, 5000)
+          })
       }
     } else {
       const new_person = { name: newName, number: newNumber };
@@ -85,6 +143,12 @@ const App = () => {
           setNewName("");
           setNewNumber("");
         })
+        .then(_ => {
+          setSuccessMessage(`Added ${newName}`);
+          setTimeout(() => {
+            setSuccessMessage(null);
+          }, 5000);
+        })
         .catch((e) => {
           alert(`Error adding ${new_person.name} to address book: ${e}`)
         }
@@ -95,6 +159,8 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <SuccessNotification message={successMessage}/>
+      <ErrorNotification message={errorMessage}/>
       <h2>Search Filter</h2>
       <SearchFilter search_input={search} handle_search={handleSearchChange} />
       <h2>Add a New Entry</h2>
@@ -103,9 +169,6 @@ const App = () => {
         <InputBox text={'number'} state_val={newNumber} on_change={handleNumberChange} />
         <div>
           <button type="submit">add</button>
-        </div>
-        <div>
-          debug: name: {newName}, number: {newNumber}
         </div>
       </form>
       <h2>Numbers</h2>
