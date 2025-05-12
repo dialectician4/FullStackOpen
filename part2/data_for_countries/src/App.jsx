@@ -35,17 +35,39 @@ const InputBox = ({ text, state_val, on_change }) => (
   </div>
 );
 
-const DisplayCountry = ({country, capital, area, languages, flag_url}) => (
-  <div>
-    <h1>{country}</h1>
-    Capital {capital}
-    Area {area}
+const DisplayCountry = ({ country }) => {
+  const [countryData, setCountryData] = useState(null);
+  if (countryData === null) {
+    getCountryData(country).then(all_data => parseCountryData(all_data))
+      .then(data => {
+        //console.log(data);
+        setCountryData(data);
+      })
+    return null
+  }
+  return (<div>
+    <h1>{countryData.country}</h1>
+    Capital {countryData.capital}<br></br>
+    Area {countryData.area}<br></br>
     <h2>Languages</h2>
-    <img src={flag_url} alt={`Country flag for ${country}`} />
-  </div>
-);
+    <ul>
+      {countryData.languages.map(lang => <li key={lang}>{lang}</li>)}
+    </ul>
+    <img src={countryData.flag_url} alt={`Country flag for ${country}`} />
+  </div>)
+};
 
-const CountriesScreen = ({fieldInput, namesList}) => {
+const MultiCountryEntry = ({ country }) => {
+  const [show, setShow] = useState(false);
+  const handleShow = () => setShow(!show);
+  return (
+    <div>{country}<button onClick={handleShow}>{'show'} </button>
+      {show ? <DisplayCountry country={country} /> : null}
+    </div>
+  )
+}
+
+const CountriesScreen = ({ fieldInput, namesList }) => {
   if (fieldInput.length === 0) {
     return <div></div>
   };
@@ -53,21 +75,26 @@ const CountriesScreen = ({fieldInput, namesList}) => {
   const matches = allCommonNames.filter(name => name.toLowerCase().includes(fieldInput.toLowerCase()));
   const matchesCount = matches.length;
   if (matchesCount > 10) {
+    // Display for too many countries
     return <div>Too many matches, specify another filter</div>
   } else if ((matchesCount > 1) && (matchesCount <= 10)) {
-    return <div>{matches.map(name => <div key={name}>{name}</div> )}</div>
+    // Display for 2 to 9 countries
+    return <div>{matches.map(name => <MultiCountryEntry key={name} country={name} />)}</div>
   } else if (matchesCount === 1) {
+    // Display for exactly 1 country
     const country_name = matches[0];
-    getCountryData(country_name).then(all_data => parseCountryData(all_data))
-      .then(data => console.log(data))
-      .then();
-    return <div>You found 1 country exactly!</div>}
-   else {
+    //getCountryData(country_name).then(all_data => parseCountryData(all_data))
+    //  .then(data => console.log(data))
+    //  .then();
+    //return <div>You found 1 country exactly!</div>
+    return <DisplayCountry country={country_name} />
+  }
+  else {
     return <div></div>
   }
 };
 
-const App = ()  => {
+const App = () => {
   const [countryInput, setCountryInput] = useState('')
   const [commonNames, setCommonNames] = useState([])
   const handleInputChange = (event) => (setCountryInput(event.target.value))
@@ -79,12 +106,12 @@ const App = ()  => {
   // getCountryData('finland').then(data => console.log(data));
   axios.get(`${api_base}all/`)
     .then(res => res.data)
-    .then(data => console.log(data));
+  //.then(data => console.log(data));
 
   return (
     <div>
-    <InputBox text={'find countries'} state_val={countryInput} on_change={handleInputChange}/>
-    <CountriesScreen fieldInput={countryInput} namesList={commonNames}/>
+      <InputBox text={'find countries'} state_val={countryInput} on_change={handleInputChange} />
+      <CountriesScreen fieldInput={countryInput} namesList={commonNames} />
     </div>
   )
 }
