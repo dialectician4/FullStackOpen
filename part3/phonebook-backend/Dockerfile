@@ -16,7 +16,8 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 
 # Copy source files into the image.
-COPY . .
+COPY ./package.json ./package-lock.json ./index.js .
+COPY ./dist/ ./dist/
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.
