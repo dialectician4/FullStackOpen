@@ -18,7 +18,10 @@ $EDITOR ./maskfile.md
 
 ~~~bash
 PLATFORM=${platform=-"linux/amd64"}
-IMAGE=${image=-$output}
+# echo "Image $IMAGE"
+if [ -z "$IMAGE" ]; then
+    IMAGE=$output
+fi
 
 docker save --platform=$PLATFORM $IMAGE | gzip > $output.tar.gz
 ~~~
@@ -27,11 +30,11 @@ docker save --platform=$PLATFORM $IMAGE | gzip > $output.tar.gz
 > Run specified docker image while listening on $port to the active $docker_port
 
 ~~~bash
-PORT=${port:-3002}
+PORT=${port:-3001}
 DOCKER_PORT=${docker_port:-3001}
-echo "MASK: Docker run on ${PORT}:${DOCKER_PORT}"
+echo "MASK: Docker run on 127.0.0.1:${PORT}:${DOCKER_PORT}"
 
-docker run -it -p $PORT:$DOCKER_PORT $image
+docker run -it -p 127.0.0.1:$PORT:$DOCKER_PORT $image
 ~~~
 
 ### docker build (image)
@@ -60,14 +63,18 @@ Maskfile should have its ENV defaults configured such that running `mask docker-
     * flags: -i --image
     * type: string
     * desc: name of docker image to use across docker ocmmands
+* compose
+    * flags: -c --compose
+    * desc: execute via compose detached
 
 ~~~bash
-# echo "Given image ${image}"
+echo "Given image ${image}"
 IMAGE=${image:-fso3phonebook}
-# echo "Post default ${IMAGE}"
+echo "Post default ${IMAGE}"
 [[ "$build" == "true" ]] && mask docker build $IMAGE
 [[ "$run" == "true" ]] && mask docker run $IMAGE
 [[ "$save" == "true" ]] && mask docker save $IMAGE
+[[ "$compose" == "true" ]] && docker compose up -d -f 
 
 ~~~
 
