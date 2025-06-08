@@ -7,6 +7,15 @@
 $EDITOR ./maskfile.md
 ~~~
 
+## npm
+> "npm" scripts
+
+### npm build-ui
+> Build frontend to dist/ dir
+~~~bash
+rm -rf dist && cd ../phonebook-frontend/ && npm run build && cp -r dist ../phonebook-backend/
+~~~
+
 ## docker
 > Docker commands
 
@@ -58,7 +67,7 @@ docker compose up -d
 ## dockerall
 > Run docker pipeline
 
-Maskfile should have its ENV defaults configured such that running `mask docker-all` executes your generic docker workflow without any further inputs.
+Maskfile should have its ENV defaults configured such that running `mask dockerall` executes your generic docker workflow without any further inputs.
 
 **OPTIONS**
 * build
@@ -80,11 +89,19 @@ Maskfile should have its ENV defaults configured such that running `mask docker-
 * deploy
     * flags: -d --deploy
     * desc: run deployment script for VPS
+* local
+    * flags: -l --local
+    * desc: run local build pipeline preceding `deploy`
 
 ~~~bash
-echo "Given image ${image}"
+# echo "Given image ${image}"
 IMAGE=${image:-fso3phonebook}
-echo "Post default ${IMAGE}"
+if [[ "$local" == "true" ]]; then
+    mask npm build-ui
+    mask docker build $IMAGE
+    mask docker save $IMAGE
+fi
+# echo "Post default ${IMAGE}"
 [[ "$build" == "true" ]] && mask docker build $IMAGE
 [[ "$run" == "true" ]] && mask docker run $IMAGE
 [[ "$save" == "true" ]] && mask docker save $IMAGE

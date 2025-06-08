@@ -7,7 +7,7 @@ export default defineConfig({
   base: "/phonebook/",
   server: {
     proxy: {
-      "/api": {
+      "/phonebook/api": {
         target: "http://localhost:3001",
         changeOrigin: true,
       },
