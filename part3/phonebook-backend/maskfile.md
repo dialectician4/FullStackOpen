@@ -44,6 +44,17 @@ docker run -it -p 127.0.0.1:$PORT:$DOCKER_PORT $image
 docker build -t $image .
 ~~~
 
+### docker deploy (image)
+> Run on VPS to deploy a .tar.gz docker image
+
+~~~bash
+gzip -d $image.tar.gz
+docker image rm -f $image
+docker image load -i $image.tar
+rm $image.tar
+docker compose up -d
+~~~
+
 ## dockerall
 > Run docker pipeline
 
@@ -66,6 +77,9 @@ Maskfile should have its ENV defaults configured such that running `mask docker-
 * compose
     * flags: -c --compose
     * desc: execute via compose detached
+* deploy
+    * flags: -d --deploy
+    * desc: run deployment script for VPS
 
 ~~~bash
 echo "Given image ${image}"
@@ -74,7 +88,8 @@ echo "Post default ${IMAGE}"
 [[ "$build" == "true" ]] && mask docker build $IMAGE
 [[ "$run" == "true" ]] && mask docker run $IMAGE
 [[ "$save" == "true" ]] && mask docker save $IMAGE
-[[ "$compose" == "true" ]] && docker compose up -d -f 
+[[ "$compose" == "true" ]] && docker compose up -d
+[[ "$deploy" == "true" ]] && mask docker deploy $IMAGE
 
 ~~~
 

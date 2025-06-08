@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const api_url = "/api/persons";
+const api_url = "/phonebook/api/persons";
 
 const get_entries = () => {
   return axios
