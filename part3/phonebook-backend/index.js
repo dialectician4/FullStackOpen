@@ -1,12 +1,36 @@
 const express = require("express");
 const morgan = require("morgan");
+const Person = require('./models/contact');
 
+//const mongoose = require('mongoose');
+//
+//// Mongo setup
+//const password = process.argv[2];
+//const url =
+//	`mongodb+srv://edwinsantoskov:${password}@cluster0.56ahvld.mongodb.net/phonebook?retryWrites=true&w=majority&appName=Cluster0`;
+//mongoose.set("strictQuery", false);
+//mongoose.connect(url);
+//const contactSchema = new mongoose.Schema({
+//	name: String,
+//	number: String,
+//});
+//contactSchema.set('toJSON', {
+//	transform: (document, returnedObject) => {
+//		returnedObject.id = returnedObject._id.toString()
+//		delete returnedObject._id
+//		delete returnedObject.__v
+//	}
+//})
+//
+//const Person = mongoose.model("Person", contactSchema);
+
+// App setup
 const app = express();
 app.use(express.json());
 app.use(express.static("dist"));
 
 app.use(morgan("tiny", {
-	skip: function (req, res) {
+	skip: function(req, res) {
 		return req.method === "POST";
 	},
 }));
@@ -15,7 +39,7 @@ morgan.token("body", (req) => JSON.stringify(req.body));
 app.use(morgan(
 	":method :url :status :res[content-length] - :response-time ms :body",
 	{
-		skip: function (req, res) {
+		skip: function(req, res) {
 			return req.method !== "POST";
 		},
 	},
@@ -49,7 +73,10 @@ app.get("/", (request, response) => {
 });
 
 app.get("/api/persons", (request, response) => {
-	response.json(people);
+	Person.find({}).then(people => {
+		response.json(people)
+	})
+	//response.json(people);
 });
 
 app.get("/info", (request, response) => {
