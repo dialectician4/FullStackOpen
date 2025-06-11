@@ -1,28 +1,7 @@
+require('dotenv').config();
 const express = require("express");
 const morgan = require("morgan");
 const Person = require('./models/contact');
-
-//const mongoose = require('mongoose');
-//
-//// Mongo setup
-//const password = process.argv[2];
-//const url =
-//	`mongodb+srv://edwinsantoskov:${password}@cluster0.56ahvld.mongodb.net/phonebook?retryWrites=true&w=majority&appName=Cluster0`;
-//mongoose.set("strictQuery", false);
-//mongoose.connect(url);
-//const contactSchema = new mongoose.Schema({
-//	name: String,
-//	number: String,
-//});
-//contactSchema.set('toJSON', {
-//	transform: (document, returnedObject) => {
-//		returnedObject.id = returnedObject._id.toString()
-//		delete returnedObject._id
-//		delete returnedObject.__v
-//	}
-//})
-//
-//const Person = mongoose.model("Person", contactSchema);
 
 // App setup
 const app = express();
@@ -72,56 +51,21 @@ app.get("/", (request, response) => {
 	response.send("<h1>Hello World!</h1>");
 });
 
-app.get("/api/persons", (request, response) => {
-	Person.find({}).then(people => {
-		response.json(people)
-	})
-	//response.json(people);
-});
-
 app.get("/info", (request, response) => {
-	const ppl_ct = people.length;
-	response.send(
-		`<div>Phonebook has info for ${ppl_ct} people<br><br>${Date()}</div>`,
-	);
+	Person.find({}).then(db_results => {
+		const ppl_ct = db_results.length;
+		response.status(200).send(
+			`<div>Phonebook has info for ${ppl_ct} people<br><br>${Date()}</div>`,
+		);
+	}).catch(e => response.status(400));
 });
 
-app.get("/api/persons/:id", (request, response) => {
-	const id = request.params.id;
-	const entry = people.find((entry) => entry.id === id);
-	// console.log('return note ', note);
-	if (entry) {
-		response.json(entry);
-	} else {
-		response.status(404).end();
-	}
+app.get("/api/persons", (request, response) => {
+	Person.find({}).then(db_results => {
+		response.json(db_results);
+	}).catch(e => response.status(400));
 });
 
-app.delete("/api/persons/:id", (request, response) => {
-	const id = request.params.id;
-	people = people.filter((note) => note.id !== id);
-	response.status(204).end();
-});
-
-const generateId = () => {
-	const maxId = people.length > 0
-		? Math.max(...people.map((n) => Number(n.id)))
-		: 0;
-	return String(maxId + 1);
-};
-
-const generateRandId = (range) => {
-	return Math.floor(Math.random() * range);
-};
-const getIdFrom1000 = (active_ids) => {
-	const new_id = generateRandId(1000);
-	if (!active_ids.includes(new_id)) {
-		return new_id;
-	}
-	return getIdFrom1000(active_ids);
-};
-
-// TODO: Add new with POST/api/persons
 app.post("/api/persons", (request, response) => {
 	const body = request.body;
 	if (!body.name || !body.number) {
@@ -130,29 +74,63 @@ app.post("/api/persons", (request, response) => {
 			error: "name or number missing from request",
 		});
 	}
-	const existing_names = people.map((entry) => entry.name);
-	if (existing_names.includes(body.name)) {
-		return response.status(404).json({
-			error: `name must be unique, ${body.name} already in phonebook`,
-		});
-	}
-	const existing_ids = people.map((entry) => entry.id);
-	const new_entry_id = getIdFrom1000(existing_ids);
-
-	const new_entry = {
-		name: body.name,
-		number: body.number,
-		id: new_entry_id,
-	};
-	people = people.concat(new_entry);
-
-	response.json(new_entry);
+	Person.find({ name: body.name }).then(db_results => {
+		if (db_results.length === 0) {
+			const newEntry = new Person({
+				name: body.name,
+				number: body.number,
+			});
+			newEntry.save()
+				.then(savedEntry => response.json(savedEntry))
+				.catch(e => {
+					console.log(`Error saving entry: ${e}`);
+					response.status(404).json({ error: e });
+				}
+				);
+		} else {
+			console.log('Existing note found with the same name, please call proper endpoint to update existing entry');
+			response.status(404).json({ error: 'update request made to wrong endpoint' });
+		}
+	}).catch(e => response.status(400));
 });
 
-// const app = http.createServer((request, response) => {
-// 	response.writeHead(200, {'Context-Type': 'application/json'});
-// 	response.end(JSON.stringify(people));
-// });
+app.get("/api/persons/:id", (request, response) => {
+	Person.findById(request.params.id).then(entry => {
+		if (entry) {
+			response.json(entry);
+		} else {
+			response.status(404).end();
+		}
+	}
+	).catch(error => {
+		console.log(error);
+		response.status(400).send({ error: 'malformed id' });
+	});
+});
+
+app.delete("/api/persons/:id", (request, response) => {
+	Person.findByIdAndDelete(request.params.id)
+		.then(result => response.status(204).end())
+		.catch(error => {
+			console.log(error);
+			response.status(400).send({ error: 'malformed id' });
+		});
+});
+
+app.put("/api/persons/:id", (request, response) => {
+	const { name, number } = request.body;
+	Person.findById(request.params.id).then(entry => {
+		if (!entry) {
+			return response.status(404).end()
+		}
+		entry.number = number;
+		return entry.save().then(updatedEntry => response.json(updatedEntry))
+	}).catch(error => {
+		console.log(e);
+		response.status(400).send({ error: 'malformed id' })
+	})
+})
+
 
 const app_outer = express();
 app_outer.use("/phonebook", app);
@@ -161,6 +139,3 @@ const PORT = process.env.PORT || 3001;
 app_outer.listen(PORT, () => {
 	console.log(`Server running on port ${PORT}`);
 });
-// console.log(`Server running on port ${PORT}`);
-
-// console.log('hello world');
