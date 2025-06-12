@@ -16,6 +16,12 @@ $EDITOR ./maskfile.md
 rm -rf dist && cd ../phonebook-frontend/ && npm run build && cp -r dist ../phonebook-backend/
 ~~~
 
+## lint
+> lint
+~~~bash
+npx eslint . --fix
+~~~
+
 ## docker
 > Docker commands
 
