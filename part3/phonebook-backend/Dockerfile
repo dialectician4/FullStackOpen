@@ -18,6 +18,7 @@ WORKDIR /usr/src/app
 # Copy source files into the image.
 COPY ./package.json ./package-lock.json ./index.js .
 COPY ./dist/ ./dist/
+COPY ./models/ ./models/
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.npm to speed up subsequent builds.

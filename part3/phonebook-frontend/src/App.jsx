@@ -105,10 +105,7 @@ const App = () => {
 
   const get_persons = () => {
     entryservice.get_entries()
-      .then((init_results) => {
-        console.log(`init results: ${init_results}`);
-        setPersons(init_results);
-      })
+      .then((init_results) => setPersons(init_results))
       .then((_) => console.log("page initialization successful"));
   };
   useEffect(get_persons, []);
@@ -166,7 +163,6 @@ const App = () => {
       }
     } else {
       const new_person = { name: newName, number: newNumber };
-      //console.log("new person", new_person);
       entryservice
         .create_entry(new_person)
         .then((response) => {
@@ -180,8 +176,11 @@ const App = () => {
             setSuccessMessage(null);
           }, 5000);
         })
-        .catch((e) => {
-          alert(`Error adding ${new_person.name} to address book: ${e}`);
+        .catch(e => {
+          setErrorMessage(`Error adding ${new_person.name} to address book: ${e.response.data.error}`);
+          setTimeout(() => {
+            setErrorMessage(null);
+          }, 5000);
         });
     }
   };
