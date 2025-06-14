@@ -63,6 +63,7 @@ docker build -t $image .
 > Run on VPS to deploy a .tar.gz docker image
 
 ~~~bash
+rm $image.tar
 gzip -d $image.tar.gz
 docker image rm -f $image
 docker image load -i $image.tar
