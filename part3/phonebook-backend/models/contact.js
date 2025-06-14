@@ -1,17 +1,25 @@
 const mongoose = require('mongoose');
 
-// Mongo setup
-//const password = process.argv[2];
-//const url =
-//`mongodb+srv://edwinsantoskov:${password}@cluster0.56ahvld.mongodb.net/phonebook?retryWrites=true&w=majority&appName=Cluster0`;
 const url = process.env.MONGODB_URI;
 mongoose.set('strictQuery', false);
 mongoose.connect(url)
   .then(() => console.log('connected to MongoDB'))
   .catch(error => console.log('error connecting to MongoDB:', error.message));
 const contactSchema = new mongoose.Schema({
-  name: String,
-  number: String,
+  name: {
+    type: String,
+    minLength: 3,
+    required: true
+  },
+  number: {
+    type: String,
+    validate: {
+      validator: function(input) {
+        return /\d{2,3}-\d+/.test(input);
+      },
+      message: input => `${input.value} does not follow the phone number requirements (2-3 numbers, a dash, and additional numbers)`
+    }
+  }
 });
 contactSchema.set('toJSON', {
   transform: (document, returnedObject) => {
