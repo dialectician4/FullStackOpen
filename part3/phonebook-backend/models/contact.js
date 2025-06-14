@@ -14,7 +14,7 @@ const contactSchema = new mongoose.Schema({
   number: {
     type: String,
     validate: {
-      validator: function (input) {
+      validator: function(input) {
         return /^\d{2,3}-\d+$/.test(input);
       },
       message: (input) =>
