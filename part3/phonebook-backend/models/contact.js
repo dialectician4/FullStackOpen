@@ -1,10 +1,10 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const url = process.env.MONGODB_URI;
-mongoose.set("strictQuery", false);
+mongoose.set('strictQuery', false);
 mongoose.connect(url)
-  .then(() => console.log("connected to MongoDB"))
-  .catch((error) => console.log("error connecting to MongoDB:", error.message));
+  .then(() => console.log('connected to MongoDB'))
+  .catch((error) => console.log('error connecting to MongoDB:', error.message));
 const contactSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -22,7 +22,7 @@ const contactSchema = new mongoose.Schema({
     },
   },
 });
-contactSchema.set("toJSON", {
+contactSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
@@ -30,6 +30,6 @@ contactSchema.set("toJSON", {
   },
 });
 
-const Person = mongoose.model("Person", contactSchema);
+const Person = mongoose.model('Person', contactSchema);
 
 module.exports = Person;
