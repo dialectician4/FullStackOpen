@@ -17,7 +17,13 @@ $EDITOR ./maskfile.md
 * method
     * flags: -m --method
     * type: string
-    * choices: get, g, post, i, put, u, delete, d, GET, POST, PUT, DELETE
+    * choices: get, g, G, GET,
+        post, i, I,, POST,
+        put, u, U, POST,
+        delete, d, D,, DELETE
+* file
+    * flags: -f --file
+    * type: string
 ~~~js
 const env_hosts = {"DEV": "http://localhost:3003",};
 const method_map = {
@@ -31,13 +37,20 @@ const method_map = {
     "d": "delete"
 };
 
-let {route, env, method } = process.env;
+let {route, env, method, file } = process.env;
 env = env ? env : "DEV";
 method = method ? method_map[method.toLowerCase()].toUpperCase() : "GET";
 const host = env_hosts[env];
+let body = null;
+if (file) {
+    const file_str = fs.readFileSync(path.resolve(file), 'utf8');
+    body = file_str //JSON.stringify(JSON.parse(file_str));
+}
 
 const result = await fetch(host + route, {
-    method: method
+    method: method,
+    headers: {'Content-Type': 'application/json'},
+    body: body
 });
 // console.log(result);
 const result_as_txt = await result.text();

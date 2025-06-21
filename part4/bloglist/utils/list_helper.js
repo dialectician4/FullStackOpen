@@ -1,4 +1,4 @@
-const dummy = (blogs) => 1;
+const dummy = (_blogs) => 1;
 
 const totalLikes = (blogs) =>
   blogs.map((blog) => blog.likes).reduce((total, elt) => total + elt, 0);

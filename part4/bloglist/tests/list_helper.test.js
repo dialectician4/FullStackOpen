@@ -64,7 +64,7 @@ const manyBlogs = [
   },
   {
     _id: '5095095570asdfa',
-    title: 'Purely Typed Algebraic Nonse',
+    title: 'Purely Typed Algebraic Nonsense',
     author: 'William Lawvere',
     url: 'blogs.blog',
     likes: 12,
