@@ -1,27 +1,44 @@
-const blogsRouter = require('express').Router();
-const Blog = require('../models/blog.js');
+const blogsRouter = require("express").Router();
+const Blog = require("../models/blog.js");
+const User = require("../models/user.js");
 
 const getOnModel = (model) => async (_request, response) => {
-  const records = await model.find({});
+  const records = await model.find({}).populate("user", {
+    username: 1,
+    name: 1,
+  });
   response.json(records);
 };
 
-blogsRouter.get('/', getOnModel(Blog));
+blogsRouter.get("/", getOnModel(Blog));
 
 const saveOnModel = (model) => async (request, response) => {
-  const inst = new model(request.body);
-  const result = await inst.save();
-  response.status(201).json(result);
+  const body = request.body;
+  const user = await User.findById(body.userId);
+  if (!user) {
+    return response.status(400).json({ error: "userId missing or not valid" });
+  }
+  const inst = new model({
+    title: body.title,
+    author: body.author,
+    url: body.url,
+    likes: body.likes,
+    user,
+  });
+  const savedInst = await inst.save();
+  user.blogs = user.blogs.concat(savedInst._id);
+  await user.save();
+  response.status(201).json(savedInst);
 };
 
-blogsRouter.post('/', saveOnModel(Blog));
+blogsRouter.post("/", saveOnModel(Blog));
 
 const deleteOnModel = (model) => async (request, response) => {
   await model.findByIdAndDelete(request.params.id);
   response.status(204).end();
 };
 
-blogsRouter.delete('/:id', deleteOnModel(Blog));
+blogsRouter.delete("/:id", deleteOnModel(Blog));
 
 const updateOnModel = (model) => async (request, response) => {
   const { likes } = request.body;
@@ -36,6 +53,6 @@ const updateOnModel = (model) => async (request, response) => {
   response.json(updatedEntry);
 };
 
-blogsRouter.put('/:id', updateOnModel(Blog));
+blogsRouter.put("/:id", updateOnModel(Blog));
 
 module.exports = blogsRouter;

@@ -1,16 +1,25 @@
-const { test, after, describe, beforeEach } = require("node:test");
+const { test, after, describe, beforeEach, before } = require("node:test");
 const assert = require("node:assert");
 const mongoose = require("mongoose");
 const supertest = require("supertest");
 const app = require("../app.js");
 const Blog = require("../models/blog.js");
+const User = require("../models/user.js");
 const helper = require("./test_helper.js");
 
 const api = supertest(app);
+before(async () => {
+  await User.deleteMany({});
+  await User.insertMany(helper.initialUsers);
+});
 
 beforeEach(async () => {
+  const current_users = await helper.usersInDb();
+  const first_id = current_users[0].id;
   await Blog.deleteMany({});
-  await Blog.insertMany(helper.initialBlogs);
+  await Blog.insertMany(
+    helper.initialBlogs.map((blog) => ({ ...blog, user: first_id })),
+  );
 });
 
 describe("live testing on test blogs db", () => {
@@ -59,11 +68,14 @@ describe("live testing on test blogs db", () => {
   });
   describe("POST on /api/blogs", () => {
     test("EXERCISE 4.10: add new blog entry", async () => {
+      const current_users = await helper.usersInDb();
+      const first_id = current_users[0].id;
       const newBlog = {
         title: "Test Only Note",
         author: "Test Author",
         url: "test.url",
         likes: 11,
+        userId: first_id,
       };
 
       await api
@@ -81,10 +93,13 @@ describe("live testing on test blogs db", () => {
     });
 
     test("EXERCISE 4.11: Posting without likes defaults to 0", async () => {
+      const current_users = await helper.usersInDb();
+      const first_id = current_users[0].id;
       const newBlog = {
         title: "Test Only Note",
         author: "Test Author",
         url: "test.url",
+        userId: first_id,
       };
       await api
         .post("/api/blogs")
@@ -181,6 +196,19 @@ describe("live testing on test blogs db", () => {
       // Safer would be to do a set-comparison and that the symmetric difference is empty
       // This assumes that DB order and order in api response is same as insertion order
       assert.deepStrictEqual(blogsWoId, helper.initialBlogs);
+    });
+
+    test("Exercise 4.17: Populate information available", async () => {
+      const response = await api
+        .get("/api/blogs")
+        .expect("Content-Type", /application\/json/);
+      const usersInDB = await helper.usersInDb();
+      const usernamesInDB = usersInDB.map((user) => user.username);
+      const namesInDB = usersInDB.map((user) => user.name);
+      for (const blog of response.body) {
+        assert(usernamesInDB.includes(blog.user.username));
+        assert(namesInDB.includes(blog.user.name));
+      }
     });
   });
   //

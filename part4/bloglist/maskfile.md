@@ -1,6 +1,7 @@
 # FSO Tasks
 
 ## edit
+
 > edit local maskfile
 
 ~~~bash
@@ -8,6 +9,7 @@ $EDITOR ./maskfile.md
 ~~~
 
 ## fetch (route)
+
 > "fetch" miniscripts
 **OPTIONS**
 * environment
@@ -53,8 +55,8 @@ const result = await fetch(host + route, {
     body: body
 });
 // console.log(result);
-const result_as_txt = await result.text();
-console.log(result_as_txt);
+const result_as_json = await result.json();
+console.log(JSON.stringify(result_as_json, null, 2));
 
 ~~~
 
