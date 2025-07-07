@@ -1,7 +1,7 @@
 {
-  "title":"Diagram Chasing",
+  "title":"Diagram",
   "author":"William Lawvere",
   "url":"syracuse.edu",
   "likes":30,
-  "userId": "6861641c0534d1a0bb7e097f"
+  "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InNhbXBsZXVzZXIiLCJpZCI6IjY4NjE2NDFjMDUzNGQxYTBiYjdlMDk3ZiIsImlhdCI6MTc1MTgxNzE5Mn0.vbOg91iNbRVoVCITS1PXQY6ut3OmGhi0H_fEm-okq3s"
 }

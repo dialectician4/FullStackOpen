@@ -73,6 +73,14 @@ const initialUsers = [
   },
 ];
 
+const encryptPwd = async (user) => ({
+  ...user,
+  passwordHash: await bcrypt.hash(user.passwordHash, 10),
+});
+
+const getEncryptedInitialUsers = () =>
+  Promise.all(initialUsers.map(encryptPwd));
+
 const blogsInDb = async () => {
   const blogs = await Blog.find({});
   return blogs.map((blog) => blog.toJSON());
@@ -83,4 +91,10 @@ const usersInDb = async () => {
   return users.map((u) => u.toJSON());
 };
 
-module.exports = { initialBlogs, initialUsers, blogsInDb, usersInDb };
+module.exports = {
+  initialBlogs,
+  initialUsers,
+  blogsInDb,
+  usersInDb,
+  getEncryptedInitialUsers,
+};

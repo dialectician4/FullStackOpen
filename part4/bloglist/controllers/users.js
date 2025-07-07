@@ -25,7 +25,6 @@ const postNewUser = (model) => async (request, response) => {
 usersRouter.post("/", postNewUser(User));
 
 const getAllUsers = (model) => async (request, response) => {
-  console.log("Hitting GET /api/users/");
   const users = await model.find({}).populate("blogs", {
     url: 1,
     title: 1,

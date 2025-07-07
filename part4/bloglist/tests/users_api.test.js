@@ -12,9 +12,26 @@ const api = supertest(app);
 
 beforeEach(async () => {
   await User.deleteMany({});
-  await User.insertMany(helper.initialUsers);
+  // const userSet = await helper.getEncryptedInitialUsers();
+  // await User.insertMany(userSet);
+  await Promise.all(helper.initialUsers.map((user) =>
+    api
+      .post("/api/users")
+      .send({
+        username: user.username,
+        name: user.name,
+        password: user.passwordHash,
+      })
+      .expect(201)
+  ));
 });
 
+// test("test user initialization", async () => {
+//   const encrypted_users = await helper.getEncryptedInitialUsers();
+//   helper.initialUsers.map((user) => console.log("unencrypted user: ", user));
+//   encrypted_users.map((user) => console.log("encrypted user: ", user));
+// });
+//
 describe("when there is initially three users in db", () => {
   test("creation succeeds with a fresh username", async () => {
     const usersAtStart = await helper.usersInDb();
@@ -148,20 +165,31 @@ describe("user validations", () => {
   });
 
   test("Exercise 4.17: test blogs can populate", async () => {
-    const current_users = await helper.usersInDb();
-    const first_id = current_users[0].id;
+    // const current_users = await helper.usersInDb();
+    // const first_user = current_users[0];
+    // const first_id = current_users[0].id;
+    const { username, passwordHash } = helper.initialUsers[0];
+    const login_response = await api
+      .post("/api/login")
+      .send({ username: username, password: passwordHash })
+      .expect(200);
+    const token = login_response.body.token;
     await Blog.deleteMany({});
     const prepdBlogs = helper.initialBlogs
-      .map((blog) => ({ ...blog, userId: first_id }));
+      .map((blog) => ({ ...blog, authorization: `Bearer ${token}` }));
     for (const blog of prepdBlogs) {
-      await api.post("/api/blogs").send(blog).expect(201);
+      await api
+        .post("/api/blogs")
+        .send(blog)
+        // .set("Authorization", `Bearer ${token}`)
+        .expect(201);
     }
     const usersResponse = await api
       .get("/api/users")
       .expect(200)
       .expect("Content-Type", /application\/json/);
     const userWBlogs = usersResponse.body
-      .filter((user) => user.id === first_id)[0];
+      .filter((user) => user.username === username)[0];
     const propagatedBlogs = userWBlogs.blogs;
     assert.strictEqual(propagatedBlogs.length, helper.initialBlogs.length);
     propagatedBlogs.forEach((userBlog) => {
