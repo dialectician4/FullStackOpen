@@ -8,6 +8,7 @@ const User = require("../models/user.js");
 const helper = require("./test_helper.js");
 
 const api = supertest(app);
+
 before(async () => {
   await User.deleteMany({});
   await User.insertMany(helper.initialUsers);
@@ -68,14 +69,17 @@ describe("live testing on test blogs db", () => {
   });
   describe("POST on /api/blogs", () => {
     test("EXERCISE 4.10: add new blog entry", async () => {
-      const current_users = await helper.usersInDb();
-      const first_id = current_users[0].id;
+      // const current_users = await helper.usersInDb();
+      // const first_id = current_users[0].id;
+      const currentUsers = await helper.usersInDb();
+      console.log("current users: ", currentUsers);
+      const loginUser = await helper.getLoggedInUser(api);
       const newBlog = {
         title: "Test Only Note",
         author: "Test Author",
         url: "test.url",
         likes: 11,
-        userId: first_id,
+        authorization: `Bearer ${loginUser.token}`,
       };
 
       await api

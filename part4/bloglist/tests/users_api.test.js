@@ -165,15 +165,14 @@ describe("user validations", () => {
   });
 
   test("Exercise 4.17: test blogs can populate", async () => {
-    // const current_users = await helper.usersInDb();
-    // const first_user = current_users[0];
-    // const first_id = current_users[0].id;
-    const { username, passwordHash } = helper.initialUsers[0];
+    const { username, passwordHash } = await helper.getLoggedInUser(api);
+    // const { username, passwordHash } = login;
     const login_response = await api
       .post("/api/login")
       .send({ username: username, password: passwordHash })
       .expect(200);
     const token = login_response.body.token;
+    // console.log("token", token);
     await Blog.deleteMany({});
     const prepdBlogs = helper.initialBlogs
       .map((blog) => ({ ...blog, authorization: `Bearer ${token}` }));
