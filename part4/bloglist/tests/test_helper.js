@@ -92,19 +92,7 @@ const usersInDb = async () => {
 };
 
 const getLoggedInUser = async (api) => {
-  // const users = await usersInDb();
-  // const user = users[0];
-  // const unencrypted_pwd = initialUsers
-  //   .filter((entry) => entry.username === user.username)[0].passwordHash;
-  // console.log("user: ", user);
-  // console.log("print pwd: ", unencrypted_pwd);
-  // const login_response = await api
-  //   .post("/api/login")
-  //   .send({ username: user.username, password: unencrypted_pwd })
-  //   .expect(200);
   const { username, passwordHash } = initialUsers[0];
-  // console.log("username: ", username);
-  // console.log("pwd: ", passwordHash);
   const login_response = await api
     .post("/api/login")
     .send({ username: username, password: passwordHash })

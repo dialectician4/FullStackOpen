@@ -11,7 +11,17 @@ const api = supertest(app);
 
 before(async () => {
   await User.deleteMany({});
-  await User.insertMany(helper.initialUsers);
+  await Promise.all(helper.initialUsers.map((user) =>
+    api
+      .post("/api/users")
+      .send({
+        username: user.username,
+        name: user.name,
+        password: user.passwordHash,
+      })
+      .expect(201)
+  ));
+  // await User.insertMany(helper.initialUsers);
 });
 
 beforeEach(async () => {
@@ -69,10 +79,6 @@ describe("live testing on test blogs db", () => {
   });
   describe("POST on /api/blogs", () => {
     test("EXERCISE 4.10: add new blog entry", async () => {
-      // const current_users = await helper.usersInDb();
-      // const first_id = current_users[0].id;
-      const currentUsers = await helper.usersInDb();
-      console.log("current users: ", currentUsers);
       const loginUser = await helper.getLoggedInUser(api);
       const newBlog = {
         title: "Test Only Note",
@@ -97,13 +103,12 @@ describe("live testing on test blogs db", () => {
     });
 
     test("EXERCISE 4.11: Posting without likes defaults to 0", async () => {
-      const current_users = await helper.usersInDb();
-      const first_id = current_users[0].id;
+      const loginUser = await helper.getLoggedInUser(api);
       const newBlog = {
         title: "Test Only Note",
         author: "Test Author",
         url: "test.url",
-        userId: first_id,
+        authorization: `Bearer ${loginUser.token}`,
       };
       await api
         .post("/api/blogs")
@@ -122,10 +127,12 @@ describe("live testing on test blogs db", () => {
     });
 
     test("EXERCISE 4.12: Post without title fails", async () => {
+      const loginUser = await helper.getLoggedInUser(api);
       const sansTitle = {
         author: "Test Author",
         url: "test.url",
         likes: 11,
+        authorization: `Bearer ${loginUser.token}`,
       };
       await api
         .post("/api/blogs")
@@ -137,10 +144,12 @@ describe("live testing on test blogs db", () => {
     });
 
     test("EXERCISE 4.12: Post without url fails", async () => {
+      const loginUser = await helper.getLoggedInUser(api);
       const sansUrl = {
         title: "Test Only Note",
         author: "Test Author",
         likes: 11,
+        authorization: `Bearer ${loginUser.token}`,
       };
       await api
         .post("/api/blogs")
@@ -153,9 +162,11 @@ describe("live testing on test blogs db", () => {
   });
   describe("DELETE on /api/blogs/:id", () => {
     test("EXERICSE 4.13: Test valid blog post deletion", async () => {
+      const loginUser = await helper.getLoggedInUser(api);
       const preDeleteBlogs = await helper.blogsInDb();
       await api
         .delete(`/api/blogs/${preDeleteBlogs[0].id}`)
+        .send({ authorization: `Bearer ${loginUser.token}` })
         .expect(204);
       const postDeleteBlogs = await helper.blogsInDb();
       assert(preDeleteBlogs.length - 1 === postDeleteBlogs.length);
