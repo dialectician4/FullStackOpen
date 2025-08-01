@@ -15,18 +15,24 @@ const styles = StyleSheet.create({
 	separator: {
 		width: 10,
 	},
+	metrics: {
+		flexGrow: 1,
+		textAlign: 'center'
+	}
 });
 const ItemSeparator = () => <View style={styles.separator} />;
 
-const Metric = ({ quantity, label }) => (<View>
-	<Text>{quantity}</Text>
-	<Text>{label}</Text>
+const Metric = ({ quantity, label }) => (<View style={styles.metrics}>
+	<Text fontWeight={'bold'} style={styles.metrics}>{quantity}</Text>
+	<Text style={styles.metrics}>{label}</Text>
 
 </View>)
 
 const MetricsList = ({ metrics }) => (
 	<FlatList
 		horizontal
+		//style={{ flexGrow: 1, flexDirection: 'row' }}
+		contentContainerStyle={{ flex: 1, justifyContent: 'center', }} // alignItems: "stretch" 
 		data={metrics}
 		ItemSeparatorComponent={ItemSeparator}
 		renderItem={({ item }) => <Metric
