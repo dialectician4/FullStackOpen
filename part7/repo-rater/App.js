@@ -1,20 +1,31 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View , Alert, Pressable } from 'react-native';
+import { StyleSheet, View, Alert, Pressable } from 'react-native';
+import RepositoryList from './src/components/RepositoryList';
+import Text from './src/components/Text';
+import Main from './src/components/Main';
+
 
 console.log("catto")
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-      <Text>Hello World!</Text>
-      <Pressable onPress={() => alertLog() }>
-        <Text>Pressable</Text>
-      </Pressable>
-    </View>
-  );
-}
+const App = () => {
+  return <Main />
+};
+
+//
+//export default function App() {
+//  return (
+//    <View style={styles.container}>
+//      <Text>Open up App.js to start working on your app!</Text>
+//      <StatusBar style="auto" />
+//      <Text>Hello World!</Text>
+//      <Pressable onPress={() => alertLog()}>
+//        <Text>Pressable</Text>
+//      </Pressable>
+//      <RepositoryList />
+//    </View>
+//  );
+//}
+
 
 const alertLog = () => {
   console.log("buttoned");
@@ -29,3 +40,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
+
+export default App;
