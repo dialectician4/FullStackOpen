@@ -32,7 +32,7 @@ const MetricsList = ({ metrics }) => (
 	<FlatList
 		horizontal
 		//style={{ flexGrow: 1, flexDirection: 'row' }}
-		contentContainerStyle={{ flex: 1, justifyContent: 'center', }} // alignItems: "stretch" 
+		contentContainerStyle={{ flex: 1, flexGrow: 1, justifyContent: 'space-around', }} // alignItems: "stretch" 
 		data={metrics}
 		ItemSeparatorComponent={ItemSeparator}
 		renderItem={({ item }) => <Metric
