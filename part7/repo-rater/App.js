@@ -1,9 +1,11 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Alert, } from 'react-native';
-//import RepositoryList from './src/components/RepositoryList';
-//import Text from './src/components/Text';
 import { NativeRouter } from 'react-router-native';
+import { ApolloProvider } from '@apollo/client';
 import Main from './src/components/Main';
+import createApolloClient from './src/utils/apolloClient';
+
+const apolloClient = createApolloClient();
 
 const repositories = [
   {
@@ -62,7 +64,9 @@ console.log("catto")
 const App = () => {
   return (<>
     <NativeRouter>
-      <Main data={repositories} />
+      <ApolloProvider client={apolloClient}>
+        <Main data={repositories} />
+      </ApolloProvider>
     </NativeRouter>
     <StatusBar style='auto' />
   </>)
